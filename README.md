@@ -25,10 +25,10 @@ ns = [1, 1.5, 1.2, 1.5, 1]
 ds = [200e-9, 125e-9, 250e-9, 125e-9, 200e-9]
 
 ```
-lamda : the wavelength for which we will calculate the distribution.
-theta : the angle of incidence of the optical field at the structure.
-ns : the values of the refractive indices including the air at the beggining and at the end of the structure.
-ds : the thicknesses of the layers. NOTE that the first and last values can be arbitrary because they refer to the air but they should always be included.
+- **lamda** : the wavelength for which we will calculate the distribution.
+- **theta** : the angle of incidence of the optical field at the structure.
+- **ns** : the values of the refractive indices including the air at the beggining and at the end of the structure.
+- **ds** : the thicknesses of the layers. NOTE that the first and last values can be arbitrary because they refer to the air but they should always be included.
 
 
 
