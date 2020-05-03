@@ -10,7 +10,8 @@ The code is collecting all the boundary-condition related equations for electric
 
 ## Getting started 
 
-Let's start with an example. Assuming that we want to simulate a multilayer structure consisting of three layers with different refractive indices sitting in air as shown in the image (n: refractive index)
+Let's start with an example. Assuming that we want to simulate a multilayer structure consisting of three layers with different refractive indices sitting in air as shown in the image (n: refractive index). We assume also that the optical field is p-polarized and has an incident angle of 0 degrees.
+
 
 
 To set the geometric and optical parameters we use the following code:
@@ -32,13 +33,20 @@ ds = [200e-9, 125e-9, 250e-9, 125e-9, 200e-9]
 - **ns** : the values of the refractive indices including the air at the beggining and at the end of the structure.
 - **ds** : the thicknesses of the layers. NOTE that the first and last values can be arbitrary because they refer to the air but they should always be included.
 
+As you see the air parts of the structure are treated as additional layers in our geometry. This means that you can assume that you enter or exit the structure with any kind of material you want. Note that there is no reflection at the end and at the start of the structure. 
+We are all set for our first calculation. We will use the amp_distribution function. 
+
+```python
+
+amps, xs, thetai = ps.amp_distribution(lamda, ns, ds,pol, theta, linit = 0, amp_init = 1, x0 = 0, y0 = 0):
+
+```
+(for now I do not comment on linit, amp_init, x0 and y0 variables )
+
+This function solves our mathematical problem and gives us:
+- **amps**: a 1D array with the amplitudes of the fields propagating right (A) and propagating left (B) in every layer i (i = 0:number_of_layers-1). For example A1 is the right propagating wave amplitude in layer 1 and B3 is the left propagating wave in layer 3. Given that notation the amplitude list will have the form amps : [A0, B0, A1, B1, A2, B2, ... ]
+- **xs**: the x coordinate of every interface
+- **thetai** : the angle of propagation in every layer
 
 
-amp_distribution
-field_distribution
-calculate_spectrum
-plot_distribution
-plot_spetrum
-
-There are some other methods that support the usage of these 5 methods but the user only needs the ones given in the list above. 
 
