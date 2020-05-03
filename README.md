@@ -11,7 +11,7 @@ The code is collecting all the boundary-condition related equations for electric
 
 Let's start with an example. Assuming that we want to simulate a multilayer structure consisting of three layers with different refractive indices sitting in air as shown in the image (n: refractive index). We assume also that the optical field is p-polarized and has an incident angle of 0 degrees.
 
-
+![](example1.png)
 
 To set the geometric and optical parameters we use the following code:
 
