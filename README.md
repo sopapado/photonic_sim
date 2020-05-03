@@ -15,7 +15,7 @@ Let's start with an example. Assuming that we want to simulate a multilayer stru
 
 To set the geometric and optical parameters we use the following code:
 
-```markdown
+```python
 
 import photonic_sim.photonic_sim as ps
 
