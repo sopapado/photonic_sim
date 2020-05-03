@@ -3,7 +3,8 @@ This is a collection of methods for simulating 1D photonic structures
 
 # Methods included 
 
-amp_distribution() \\
+amp_distribution() 
+
 field_distribution()
 calculate_spectrum()
 plot_distribution()
