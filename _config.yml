@@ -1,1 +1,4 @@
 theme: jekyll-theme-minimal
+title: [photonic_sim]
+description: [Simulations of optical waves in multilayered media in 1D]
+logo: [https://github.com/sopapado/photonic_sim/blob/master/photonic_sim%20logo.png]
