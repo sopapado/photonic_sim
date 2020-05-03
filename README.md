@@ -8,6 +8,22 @@ With photonic_sim you can calculate the electric and magnetic field of optical w
 
 The code is collecting all the boundary-condition related equations for electric and magnetic fields from every interface set by the user. Then it solves the system and manipulates the data in order to provide the field distribution along the structure for a given wavelength as well as transmission, reflection and loss spectrum for a given spectral region.
 
+## Getting started 
+
+Let's start with an example. Assuming that we want to simulate a multilayer structure consisting of three layers with different refractive indices sitting in air as shown in the image (n: refractive index)
+
+
+To set the geometric and optical parameters we use the following code
+
+```markdown
+
+import photonic_sim.photonic_sim as ps
+
+ns = [1, 1.5, 1.2, 1.5, 1] # the values of refractive index including the air at the beggining and at the end of the structure
+ds = [200e-9, 125e-9, 250e-9, 125e-9, 200e-9] # the thicknesses of the layer. NOTE that the first and last values can be arbitrary because they refer to the air.
+
+
+```
 amp_distribution
 field_distribution
 calculate_spectrum
