@@ -49,4 +49,4 @@ This function solves our mathematical problem and gives us:
 - **thetai** : the angles of propagation in every layer
 
 
-
+[... work in progress ]
