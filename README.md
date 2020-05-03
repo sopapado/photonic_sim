@@ -1,5 +1,4 @@
 # photonic_sim
-<img src="https://github.com/sopapado/photonic_sim/blob/master/photonic_sim%20logo.png" alt="drawing" width="200"/>
 
 The **photonic_sim** package is a collection of python methods for simulating propagation of fields in multilayered structures.
 With photonic_sim you can calculate the electric and magnetic field of optical waves in arbitrary 1D photonic structures. The simulator assumes non-magnetic materials in current-free spaces.
