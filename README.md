@@ -1,4 +1,6 @@
 # photonic_sim
+![alt text](https://github.com/sopapado/photonic_sim/blob/master/photonic_sim%20logo.png "Logo Title Text 1")
+
 This is a collection of methods for simulating 1D photonic structures
 
 # Methods included 
