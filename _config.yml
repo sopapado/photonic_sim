@@ -1,3 +1,4 @@
 theme: jekyll-theme-minimal
 title: [photonic_sim]
 description: [Simulations of optical waves in multilayered media in 1D]
+logo: [photonic_sim_logo.png]
