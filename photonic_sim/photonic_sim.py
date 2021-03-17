@@ -3,7 +3,6 @@ import matplotlib.pyplot as plt
 from tabulate import tabulate
 from tqdm import tqdm
 import addcopyfighandler as copyfig
-import my_functions.my_functions as mf
 from scipy.signal import find_peaks as find_peaks 
 from scipy.interpolate import interp1d as interp1d
 import mpmath as mp
@@ -600,6 +599,6 @@ def read_and_plot_refractive_index_spectrum(filename):
     plt.title(name)
     plt.legend()
     plt.tight_layout()
-    mf.save_fig(fig,'..\\PLOTS\\refractive_indices\\'+name)
+    save_fig(fig,'..\\PLOTS\\refractive_indices\\'+name)
     n_mat = [ mat_lamda, mat_n ]    
     return n_mat
