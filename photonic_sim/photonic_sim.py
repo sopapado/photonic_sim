@@ -1,6 +1,5 @@
 import numpy as np 
 import matplotlib.pyplot as plt 
-import pprint
 from tabulate import tabulate
 from tqdm import tqdm
 import w2rgb as w2rgb
@@ -8,13 +7,13 @@ import addcopyfighandler as copyfig
 import my_functions.my_functions as mf
 from scipy.signal import find_peaks as find_peaks 
 from scipy.interpolate import interp1d as interp1d
-import sys
 import mpmath as mp
 from IPython.lib.pretty import pretty
 from mpmath import fp
-import time
 import scipy.constants as sc
 import cmath
+import os 
+import pickle
 
 def transform_ns(lamda,ns):
     
@@ -31,9 +30,11 @@ def transform_ns(lamda,ns):
             
     return ns_new
 
-
-def field_distribution(lamda, ns, ds, thetai, y0, amps, dx,pol): 
-
+def field_distribution(lamda, ns, ds, dx, pol = 'p', theta_init = 0 , linit = 0, amp_init = 1,  x0 = 0, y0 = 0 ): 
+    
+    thetai = angle_distribution(lamda, ns, ds, theta_init = theta_init, linit = 0)
+    amps, xs = amp_distribution(lamda, ns, ds, pol = pol, theta_init = theta_init, linit = linit, amp_init = amp_init, x0 = x0, y0 = y0)
+    
     # lamda : the wavelength in m that you want the distribution to be calculated
     # ns : the refractive indices for every layer (including input and output region) 
     # ds : the thicknesses in every layer (len(ds) == len(ns))
@@ -44,10 +45,16 @@ def field_distribution(lamda, ns, ds, thetai, y0, amps, dx,pol):
     # nx : is the refractive index distribution given by the user with dx resolution this time ( to be plotted alond with the field)
     # x_plot : is the x-axis value for plotting field vs distance x. 
     
+    
+
+    ns = list(ns)
+    ds = list(ds)
     # Transform ns 
     ns_new = transform_ns(lamda, ns)
 
+        
     
+
     xtemp = 0
     xs = []
 
@@ -187,7 +194,6 @@ def field_distribution(lamda, ns, ds, thetai, y0, amps, dx,pol):
 
     return np.asarray(Ex), np.asarray(Ey), np.asarray(Ez), np.asarray(Hx), np.asarray(Hy), np.asarray(Hz), np.asarray(nx), np.asarray(x_plot)
 
-
 def plot_distribution(E,H, nx, x, lamda, filename ):
     
     rgb = w2rgb.wavelength_to_rgb(lamda*1e9, gamma = 1)
@@ -211,11 +217,10 @@ def plot_distribution(E,H, nx, x, lamda, filename ):
     ax1.patch.set_visible(False)
     
     plt.savefig(filename+'.png')
-    mf.save_fig(fig, filename)
+    save_fig(fig, filename)
     plt.clf()
 
- 
-def calculate_spectrum(lamda, ns, ds, l0, l1, dlamda, pol, theta_init, linit, amp_init, x0, y0):
+def calculate_spectrum(lamda, ns, ds, l0, l1, dlamda, pol = 'p', theta_init = 0, linit = 0, amp_init = 1, x0 = 0, y0= 0):
 
 
 
@@ -262,7 +267,7 @@ def calculate_spectrum(lamda, ns, ds, l0, l1, dlamda, pol, theta_init, linit, am
         ns_new = transform_ns(lamda, ns)
 
         
-        amps, xs, thetai = amp_distribution(lamda, ns, ds, pol, theta_init, linit, amp_init, x0, y0)
+        amps, xs = amp_distribution(lamda, ns, ds, pol, theta_init, linit, amp_init, x0, y0)
         # the reflection and transmission of the structure will be given by the amplitudes of in first and last layer
         R = np.abs(amps[1])**2
         T = np.abs(amps[-2])**2*np.abs((ns_new[-1]/ns_new[0]))
@@ -277,8 +282,8 @@ def calculate_spectrum(lamda, ns, ds, l0, l1, dlamda, pol, theta_init, linit, am
 
     return np.asarray(Rspec), np.asarray(Tspec), lamdas
 
-
 def define_lamdas(lamda, dlamda, l0,l1, ns ):
+
     
     # this method is using the ns array where the user has put any dispersion data
     # of the material (complex refractive index VS wavelength) and defines the 
@@ -319,8 +324,29 @@ def define_lamdas(lamda, dlamda, l0,l1, ns ):
 
     return lamdas 
 
-def amp_distribution(lamda, ns, ds,pol, theta_init, linit, amp_init, x0, y0):
-            
+def angle_distribution(lamda, ns, ds, theta_init = 0, linit = 0):
+    N = len(ds)-1 # number of interfaces
+    thetai = np.zeros(N+1) + 0j
+    thetai[linit] = theta_init
+    ns_new = transform_ns(lamda, ns)
+    for i in range(N-linit):
+        nl = ns_new[i+linit] # refractive index on the left of interface
+        nr = ns_new[i+1+linit] # refractive index on the right of interface
+        thetai[i+linit+1] =   cmath.asin(nl*np.sin(thetai[i+linit])/nr)
+
+    for i in range(linit):
+        nl = ns_new[linit-i] # refractive index on the left of interface
+        nr = ns_new[linit-i-1] # refractive index on the right of interface
+        thetai[linit-i-1] =  cmath.asin(nl*np.sin(thetai[i+linit])/nr)
+
+    return thetai
+
+def amp_distribution(lamda, ns, ds, pol = 'p', theta_init = 0, linit = 0, amp_init = 1, x0 = 0, y0 = 0):
+    
+    amp_init = amp_init + 0j
+    ns = list(ns)
+    ds = list(ds)
+
     k = 2*np.pi/lamda
     N = len(ds)-1 # number of interfaces
 
@@ -345,19 +371,20 @@ def amp_distribution(lamda, ns, ds,pol, theta_init, linit, amp_init, x0, y0):
 
 
     # calculate the angles of propagation for all layers
+    thetai = angle_distribution(lamda, ns, ds, theta_init = theta_init , linit = linit)
+    # N = len(ds)-1 # number of interfaces
+    # thetai = np.zeros(N+1) + 0j
+    # thetai[linit] = theta_init
+    # ns_new = transform_ns(lamda, ns)
+    # for i in range(N-linit):
+    #     nl = ns_new[i+linit] # refractive index on the left of interface
+    #     nr = ns_new[i+1+linit] # refractive index on the right of interface
+    #     thetai[i+linit+1] =   cmath.asin(nl*np.sin(thetai[i+linit])/nr)
 
-    thetai = np.zeros(N+1) + 0j
-    thetai[linit] = theta_init
-
-    for i in range(N-linit):
-        nl = ns_new[i+linit] # refractive index on the left of interface
-        nr = ns_new[i+1+linit] # refractive index on the right of interface
-        thetai[i+linit+1] =   cmath.asin(nl*np.sin(thetai[i+linit])/nr)
-
-    for i in range(linit):
-        nl = ns_new[linit-i] # refractive index on the left of interface
-        nr = ns_new[linit-i-1] # refractive index on the right of interface
-        thetai[linit-i-1] =  cmath.asin(nl*np.sin(thetai[i+linit])/nr)
+    # for i in range(linit):
+    #     nl = ns_new[linit-i] # refractive index on the left of interface
+    #     nr = ns_new[linit-i-1] # refractive index on the right of interface
+    #     thetai[linit-i-1] =  cmath.asin(nl*np.sin(thetai[i+linit])/nr)
 
 
     for i in range(N):
@@ -435,7 +462,7 @@ def amp_distribution(lamda, ns, ds,pol, theta_init, linit, amp_init, x0, y0):
         amps[2*linit] = amps[2*linit]+amp_init/2
         amps[2*linit+1] = amps[2*linit+1]+amp_init/2
 
-    return amps, xs, thetai
+    return amps, xs
 
 def plot_spectrum(T, R, lamdas, filename ):
     
@@ -455,7 +482,7 @@ def plot_spectrum(T, R, lamdas, filename ):
     plt.tight_layout()
     
     plt.savefig(filename+'T.png')
-    mf.save_fig(fig, filename+ 'T')
+    save_fig(fig, filename+ 'T')
     plt.clf()
     
     plt.rcParams.update({'font.size': 18})
@@ -472,9 +499,8 @@ def plot_spectrum(T, R, lamdas, filename ):
     plt.tight_layout()
     
     plt.savefig(filename+'R.png')
-    mf.save_fig(fig, filename+ 'R')
+    save_fig(fig, filename+ 'R')
     plt.clf()
-
 
 def print_peak_wavelengths(T, lamdas):
     
@@ -486,3 +512,95 @@ def print_peak_wavelengths(T, lamdas):
     print('### PEAK WAVELENGTHS [nm] ###' )
     print(tabulate(np.transpose(lpeak)))
     return peaks
+
+def save_fig(fig,filename):
+
+    pickle.dump(fig, open( filename + '.fig.pickle', 'wb'))
+    f = open(filename+'.pyx',"w+")
+    fig.clf()
+    f.write("import pickle as pickle\n")
+    f.write("import matplotlib.pyplot as plt\n")
+    f.write("import addcopyfighandler as copyfig\n")
+    try:
+        filename = filename.split( '\\')[-1]
+    except: IndexError
+    
+    file_string = "figx = pickle.load(open(r'"+filename+".fig.pickle','rb'))"
+    f.write(file_string + '\n')
+    #f.write("dummy = plt.figure()\n")
+    #f.write("new_manager = dummy.canvas.manager\n")
+    #f.write("new_manager.canvas.figure = figx\n")
+    #f.write("figx.set_canvas(new_manager.canvas)\n")
+    #fig.clf()
+    f.write("copyfig.copyfig(figx)\n")
+    f.write("plt.show()\n")
+
+
+def read_refractive_index(filename):
+
+    # print('AAAAAAAAAAAAAA',os.getcwd())
+    # filename = 'materials/' + filename + '.csv'
+    f = open(filename)
+    name = filename.split('\\')[-1]
+    name = name.split('.')[0]
+    f = open(filename)
+    f.readline()
+    mat_lamda = []
+    mat_n = []
+    complex_n = True
+    for line in f :
+        mat_lamda.append(np.float(line.split(',')[0])*1e-6)
+        try:
+            mat_n.append(np.float(line.split(',')[1])+1j*np.float(line.split(',')[2]))
+        except IndexError:
+             mat_n.append(np.float(line.split(',')[1]))
+             complex_n = False
+    mat_lamda = np.asarray(mat_lamda)
+    n_mat = [ mat_lamda, mat_n ]    
+    return n_mat
+
+def read_and_plot_refractive_index_spectrum(filename): 
+
+    # this method reads a specific file format for refractive index spectrum.
+    # it has the following format 
+
+    # line 1: (it is passed - you can put here any comments you have)
+    # line 2: 0.5, 1, 1 (the first element is wavelength in um and the 2nd and 3rd is real and imag  of refractive index)
+    # ...
+    #(this is the format given by the website for .csv file : https://refractiveindex.info/)
+    # be careful : some data donot have real and imaginary in the same wavelength. You need to prepare the file accordingly.
+    
+    f = open(filename)
+    name = filename.split('\\')[-1]
+    name = name.split('.')[0]
+    f = open(filename)
+    f.readline()
+    mat_lamda = []
+    mat_n = []
+    complex_n = True
+    for line in f :
+        mat_lamda.append(np.float(line.split(',')[0])*1e-6)
+        try:
+            mat_n.append(np.float(line.split(',')[1])+1j*np.float(line.split(',')[2]))
+        except IndexError:
+             mat_n.append(np.float(line.split(',')[1]))
+             complex_n = False
+    mat_lamda = np.asarray(mat_lamda)
+
+    plt.rcParams.update({'font.size': 15})
+    fig, ax = plt.subplots(figsize=(6.0,4.0))
+    plt.plot(mat_lamda/1e-9,np.real(mat_n),'-o',color = 'darkred', linewidth = 3,label = '$n$')
+    if complex_n:
+        plt.plot(mat_lamda/1e-9,np.imag(mat_n),'-o',color = 'k', linewidth = 3, label= '$\kappa$')
+    # #fmat = interp1d(mat_lamda, mat_n)
+    # plt.plot(np.linspace(mat_lamda[0],mat_lamda[-1],1000)/1e-9,np.imag(fmat(np.linspace(mat_lamda[0],mat_lamda[-1],1000))), '-o')
+    plt.xlim(mat_lamda[0]/1e-9, mat_lamda[-1]/1e-9)
+    plt.grid()
+    plt.xlabel('wavelength [nm]')
+    plt.ylabel("refractive index $n_{c} = n + j \kappa$")
+    plt.title(name)
+    plt.legend()
+    plt.tight_layout()
+    mf.save_fig(fig,'..\\PLOTS\\refractive_indices\\'+name)
+    n_mat = [ mat_lamda, mat_n ]    
+    return n_mat
