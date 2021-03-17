@@ -8,7 +8,7 @@ setup(name='photonic_sim',
       author_email='send@git.com',
       license='MIT',
       packages=['photonic_sim'],
-      install_requires = [ 'tabulate','tqdm','w2rgb','addcopyfighandler','mpmath','pickle'],
+      install_requires = [ 'tabulate','tqdm','addcopyfighandler','mpmath','pickle','w2rgb'],
       zip_safe=False)
       
 
