@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt 
 from tabulate import tabulate
 from tqdm import tqdm
-import w2rgb as w2rgb
 import addcopyfighandler as copyfig
 import my_functions.my_functions as mf
 from scipy.signal import find_peaks as find_peaks 
@@ -196,7 +195,7 @@ def field_distribution(lamda, ns, ds, dx, pol = 'p', theta_init = 0 , linit = 0,
 
 def plot_distribution(E,H, nx, x, lamda, filename ):
     
-    rgb = w2rgb.wavelength_to_rgb(lamda*1e9, gamma = 1)
+    rgb = [244,165,130]
     plt.rcParams.update({'font.size': 18})
     fig,ax1 = plt.subplots(figsize=(10.0,4.0))
     ax1.plot(np.asarray(x)/1e-9,E, color = rgb, linewidth = 3,label = '$|E|^2$')
