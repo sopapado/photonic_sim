@@ -194,7 +194,7 @@ def field_distribution(lamda, ns, ds, dx, pol = 'p', theta_init = 0 , linit = 0,
 
 def plot_distribution(E,H, nx, x, lamda, filename ):
     
-    rgb = [244,165,130]
+    rgb = np.asarray([244,165,130])/256
     plt.rcParams.update({'font.size': 18})
     fig,ax1 = plt.subplots(figsize=(10.0,4.0))
     ax1.plot(np.asarray(x)/1e-9,E, color = rgb, linewidth = 3,label = '$|E|^2$')
